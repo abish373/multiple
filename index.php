@@ -1,3 +1,5 @@
+<?php include('nav.php') ?>
+
 <?php 
 
 if(isset($_POST['submit'])){
@@ -5,54 +7,59 @@ if(isset($_POST['submit'])){
         $userfile = $_FILES['userfile'];
         //echo "<pre>"; print_r($_FILES['userfile']); die;
     }
-    if(isset($_COOKIE['mycook'])){
-        $cookie= $_COOKIE['mycook'];
-        $cookielist = explode(",",$cookie);
-        // echo "<pre>"; print_r($cookielist); die;   
+    // if(isset($_COOKIE['mycook'])){
+    //     $cookie= $_COOKIE['mycook'];
+    //     $cookielist = explode(",",$cookie);
+    //     //echo "<pre>"; print_r($cookie); die;   
+    // }
+    if (isset($_POST['delete'])) {
+        $value = $_POST['delete'];
+        $cookielist = explode(",",$value[0]);
+        // echo "<pre>";print_r($cookielist);die;
     }
     $namelist = $userfile['name'];
-    $db = [];
-    echo"<pre>"; print_r($namelist);die;
-    foreach($namelist as $name){
-        foreach($cookielist as $cook){
-            if($name == $cook){
-                // array_splice($namelist,$name,1);
-            }else{
-                // echo $name;
-                array_push($db,$name);
-            }
+    $db = array_diff($namelist, $cookielist);
+
+    $dbdata = serialize($db);
+    
+
+    // echo "<pre>"; print_r($db); die;
+
+    $conn =mysqli_connect('localhost','root','','mu');
+
+    $sql = "INSERT INTO images SET img='$dbdata'";
+        if(mysqli_query($conn,$sql)){
+            // echo "new record create sucessfully";
+        }else {
+            echo "Error: "; /*. $sql . "<br>" . mysqli_error($conn);*/
         }
-    }
-    //$dbdata = array_unique($db);
 
-    echo "<pre>"; print_r(array_unique($db)); die;
-
-    // $conn =mysqli_connect('localhost','root','','mu');
-
-    // foreach ($dbdata as $dd) {
+    // foreach ($db as $dd) {
     //     $sql = "INSERT INTO images SET img='$dd'";
     //     if(mysqli_query($conn,$sql)){
-    //         echo "new record create sucessfully";
+    //         // echo "new record create sucessfully";
     //     }else {
     //         echo "Error: "; /*. $sql . "<br>" . mysqli_error($conn);*/
     //     }
     // }
 
+      $countfiles = count($_FILES['userfile']['name']);
 
+     for($i=0;$i<$countfiles;$i++){
 
+       $filename = $_FILES['userfile']['name'][$i];
+       
+       // Upload file
+       move_uploaded_file($_FILES['userfile']['tmp_name'][$i],'img/'.$filename);
+        
+     }
     // echo "<pre>"; print_r($dbdata); die;
-
 }
 
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+
+
 <style>
 .imgspan >img {
     width:100px;
@@ -76,15 +83,30 @@ span {
 
 </style>
 </head>
+<?php 
+    if (isset($_POST['edits'])) {
+        echo "this is edits";
+    }
+?>
+<?php 
+    if (isset($_POST['deletes'])) {
+        echo "<pre>";print_r($_POST['deletes']); die;
+    }
+?>
 
 <body>
-    <form action="" id="upload_Form" method="POST" enctype="multipart/form-data"> 
+    <form action="" id="upload_Form" method="POST" enctype="multipart/form-data" action="test.php"> 
 
         <input type="file" name="userfile[]" id="files_input" multiple>
 
-        <button type="submit" name="submit" value="submit">Upload</button>
+        
+        <input type="submit" name="submit" value="Upload">
+        <input type="hidden" id="hid" name="delete[]">
+        <!-- <a href="test.php">Click here to view images</a> -->
 
     </form>
+
+    
 
     <div class="images">
 
@@ -94,6 +116,7 @@ span {
 
         let uploadForm=document.getElementById('upload_form')
         let uploadInput=document.getElementById('files_input')
+        let hid = document.getElementById('hid');
         let cook = []
         // let coo = cook;
         let mycook = JSON.stringify(cook)
@@ -145,25 +168,14 @@ span {
          imagesDiv.removeChild(imageDiv)
             cook.push(imageDiv.id)
             document.cookie= `mycook=${cook}; expires=Fri, 31 Dec 9999 23:59:59 GMT`
+            hid.value= cook;
             uploadedImages.splice(i,1)
             
             
             
         }  
         
-        // uploadForm.addEventListener('submit',(e)=>{
-        //     e.preventDefault()
-
-        //     fetch('url',{
-        //         method:"POST",
-        //         headers:{
-                    
-        //         },
-        //         body:JSON.stringify({
-        //             files:uploadedImages
-        //         })
-        //     })
-        // })
+        
 
     </script>
 

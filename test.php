@@ -1,155 +1,99 @@
+<?php include('nav.php') ?>
 <?php 
+    $conn =mysqli_connect('localhost','root','','mu');
 
-if(isset($_POST['submit'])){
-    if(isset($_FILES['userfile'])){
-        $userfile = $_FILES['userfile'];
-        //echo "<pre>"; print_r($_FILES['userfile']); die;
-    }
-    if(isset($_COOKIE['mycook'])){
-        $cookie= $_COOKIE['mycook'];
-        $cookielist = explode(",",$cookie);
-        //echo "<pre>"; print_r($coo); die;   
-    }
-    $namelist = $userfile['name'];
-    $db = [];
-    //echo $namelist;
-    foreach($namelist as $name){
-        foreach($cookielist as $cook){
-            if($name == $cook){
+    $query = 'SELECT * FROM images';
+    $result = mysqli_query($conn,$query);
 
-            }else{
-                array_push($db,$name);
-            }
+    $users = mysqli_fetch_all($result,MYSQLI_ASSOC);
+
+    // $users = unserialize($user);
+
+    mysqli_free_result($result);
+    
+    // echo "<pre>"; print_r($users); die;
+    $users = unserialize($users[0]['img']);
+    // $users = unserialize($users[0]['id']);
+
+
+    // echo "<pre>"; print_r($users); die;
+?>
+
+<?php 
+    if (isset($_COOKIE['del'])) {
+        $cookie = intval($_COOKIE['del']);
+        
+        $conn =mysqli_connect('localhost','root','','mu');
+
+
+         $sql = "DELETE FROM images WHERE id='$cookie'";
+
+        if(mysqli_query($conn,$sql)){
+            //echo "record deleted sucessfully";
+        }else{
+            echo "error happend";
         }
     }
-
-    echo "<pre>"; print_r(array_unique($db)); die;
-
-}
-
 ?>
-<!DOCTYPE html>
-<html lang="en">
+<div class="oldimages" style="margin:10px;">
+        
+        <?php foreach ($users as $us) { ?>
+            <form style="display: flex;  margin:20px;" id="<?php echo $us; ?>" method="POST" action="test.php"><?php if(isset($us)): ?>
+                <img src="img/<?php echo $us; ?>" style="width:100px; height: 100px;">
+                <div style="display: flex;flex-direction: column;">
+                    <input type="submit" value="delete" onclick="deleteimage(this.id)" id="<?php echo $us['id']; ?>" name="deletes" style="margin: 10px;background-color: red; color: white; border:none; padding: 10px;"></input>
+                    <a href="some.php" type="submit" id="<?php echo $us['id']; ?>" value="edits" name="edits" onclick="editimage(this.id)" style="margin: 10px; background-color: blue; color: white; border:none; padding: 10px;">Edit</a>
+                </div>
+                <?php endif?>
+            </form>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-<style>
-.imgspan >img {
-    width:100px;
-    height:100px;
-    border:1px solid red;
-    padding:10px;
-    margin:10px;
-}
-
-span {
-    vertical-align:top;
-    color:red;
-    font-size:30px;
-    cursor:pointer;
-
-}
-.images{
-    display:flex;
-
-}
-
-</style>
-</head>
-
-<body>
-    <form action="" id="upload_Form" method="POST" enctype="multipart/form-data"> 
-
-        <input type="file" name="userfile[]" id="files_input" multiple>
-
-        <button type="submit" name="submit" value="submit">Upload</button>
-
-    </form>
-
-    <div class="images">
-
+            
+        <?php } ?>
     </div>
 
     <script>
-
-        let uploadForm=document.getElementById('upload_form')
-        let uploadInput=document.getElementById('files_input')
-        let cook = []
-        let coo = cook;
-        let mycook = JSON.stringify(coo)
-
-        let uploadedImages=[]  //to store images
-
-        // uploadForm.addEventListener('submit',)
-
-        uploadInput.addEventListener('input',displayImages)
-
-        function displayImages(e){
-
-            let files=e.target.files
-            let noOfFiles=files.length;
-            let imagesDiv=document.querySelector('.images')
-            imagesDiv.innerHTML=""
-            uploadedImages=[]
-
-            for (let i=0;i<noOfFiles;i++){
-                document.cookie = ""
-                uploadedImages.push(files[i])
-
-                let div=document.createElement('div')
-                div.id= event.target.files[i].name
-                div.classList = "imgspan"
-                let img=document.createElement('img')
-
-                let deleteBtn=document.createElement('span')
-                deleteBtn.innerText='X'
-
-                img.classList.add('uploadimg')
-                img.id= event.target.files[i].name
-                img.src=URL.createObjectURL(event.target.files[i]);
-
-                div.appendChild(img)
-                div.appendChild(deleteBtn)
-
-                imagesDiv.appendChild(div)
-
-                deleteBtn.addEventListener('click',(e)=>{
-                    deleteImage(e,div,imagesDiv,i)
-                })
-
-            }
-        }
-
-        function deleteImage(e,imageDiv,imagesDiv,i){
-         imagesDiv.removeChild(imageDiv)
-            cook.push(imageDiv.id)
-            document.cookie= `mycook=${cook}; expires=Fri, 31 Dec 9999 23:59:59 GMT`
-            uploadedImages.splice(i,1)
-            
-            
-            
-        }  
-        
-        // uploadForm.addEventListener('submit',(e)=>{
-        //     e.preventDefault()
-
-        //     fetch('url',{
-        //         method:"POST",
-        //         headers:{
+                function deleteimage(id){ 
+                    console.log(id)
                     
-        //         },
-        //         body:JSON.stringify({
-        //             files:uploadedImages
-        //         })
-        //     })
-        // })
+                    let del = id;
+                    
+                    document.cookie= `del=${del}; expires=Fri, 31 Dec 9999 23:59:59 GMT`
 
-    </script>
+                    // let element = document.getElementById(del).parentNode;
+
+                    // console.log(element)
 
 
-</body>
+                }
 
-</html>
+                function editimage(id){ 
+                    console.log(id)
+                    
+                    let del = id;
+                    
+                    document.cookie= `edit=${del}; expires=Fri, 31 Dec 9999 23:59:59 GMT`
+
+
+                }
+                
+
+            </script>
+            <script >
+                // setTimeout(function(){
+                //   reload()}, 300);
+
+                // function reload() {
+                //     reload()
+                // }
+
+                window.onload = function() {
+                    //considering there aren't any hashes in the urls already
+                    if(!window.location.hash) {
+                        //setting window location
+                        window.location = window.location + '#loaded';
+                        //using reload() method to reload web page
+                        window.location.reload();
+                    }
+                }
+                
+            </script>
